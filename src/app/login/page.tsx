@@ -1,8 +1,9 @@
 "use client";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { axios } from "axios";
+import axios from "axios";
+import toast from "react-hot-toast";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -10,10 +11,29 @@ export default function SignupPage() {
     username: "",
     password: "",
   });
+  const [buttonDisabled, setButtonDisabled] = React.useState(false);
 
-  const onLogin = () => {
-    router.push("/game/1");
+  const onLogin = async () => {
+    try {
+      const response = await axios.post("/api/users/login", user);
+      console.log("Login successful", response.data);
+      toast.success("login successful");
+      const level = response.data.level;
+      console.log("level: " + level);
+      router.push(`/game/${level}`);
+    } catch (error: any) {
+      console.log(error);
+      toast.error(error.message);
+    }
   };
+
+  useEffect(() => {
+    if (user.username.length > 0 && user.password.length > 0) {
+      setButtonDisabled(false);
+    } else {
+      setButtonDisabled(true);
+    }
+  }, [user]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen py-2">

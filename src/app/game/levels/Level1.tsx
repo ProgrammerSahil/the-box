@@ -11,7 +11,6 @@ const Level1: React.FC = () => {
   const runnerRef = useRef<Matter.Runner | null>(null);
   const boxRef = useRef<Matter.Body | null>(null);
   const isGroundedRef = useRef(false);
-  const scoreRef = useRef(0);
 
   useEffect(() => {
     const Engine = Matter.Engine;
@@ -29,33 +28,33 @@ const Level1: React.FC = () => {
         width: 1200,
         height: 600,
         wireframes: false,
-        background: "#87CEEB",
+        background: "#000000", // White background
       },
     });
     runnerRef.current = Runner.create();
 
     boxRef.current = Bodies.rectangle(100, 500, 20, 20, {
-      render: { fillStyle: "#FF0000" },
+      render: { fillStyle: "#ffffff" }, // Black playable cube
       frictionAir: 0.001,
       friction: 0.1,
       restitution: 0.1,
     });
 
-    const { ground, leftWall, rightWall } = spawnWorldBox(Bodies);
+    const { ground, leftWall, rightWall } = spawnWorldBox(Bodies); // Black walls and ground
 
     // **More Challenging Obstacles**
-    const obstacle1 = createObstacle(Bodies, 800, 520, 50, 200, "black"); // Taller
-    const obstacle2 = createObstacle(Bodies, 1100, 480, 200, 50, "black"); // Wider
-    const obstacle3 = createObstacle(Bodies, 1400, 530, 100, 100, "black"); // More central
-    const obstacle4 = createObstacle(Bodies, 1700, 500, 50, 50, "red"); // Smaller, different color
-    const obstacle5 = createObstacle(Bodies, 2000, 520, 150, 150, "black"); // Larger
-    const obstacle6 = createObstacle(Bodies, 2300, 480, 100, 100, "black"); // More obstacles
-    const obstacle7 = createObstacle(Bodies, 2600, 530, 50, 200, "black");
+    const obstacle1 = createObstacle(Bodies, 800, 520, 50, 200, "#ffffff"); // Black obstacle
+    const obstacle2 = createObstacle(Bodies, 1100, 480, 200, 50, "#ffffff"); // Black obstacle
+    const obstacle3 = createObstacle(Bodies, 1400, 530, 100, 100, "#ffffff"); // Black obstacle
+    const obstacle4 = createObstacle(Bodies, 1700, 500, 50, 50, "#ffffff"); // Black obstacle
+    const obstacle5 = createObstacle(Bodies, 2000, 520, 150, 150, "#ffffff"); // Black obstacle
+    const obstacle6 = createObstacle(Bodies, 2300, 480, 100, 100, "#ffffff"); // Black obstacle
+    const obstacle7 = createObstacle(Bodies, 2600, 530, 50, 200, "#ffffff"); // Black obstacle
 
     const endGoal = Bodies.rectangle(3000, 530, 50, 100, {
       isStatic: true,
       isSensor: true,
-      render: { fillStyle: "#FFD700" },
+      render: { fillStyle: "gold" }, // Black end goal
     });
 
     World.add(engineRef.current.world, [
@@ -106,10 +105,6 @@ const Level1: React.FC = () => {
     Events.on(engineRef.current, "afterUpdate", () => {
       if (boxRef.current && renderRef.current) {
         const box = boxRef.current;
-        scoreRef.current = Math.floor(box.position.x / 10);
-        document.getElementById(
-          "score"
-        )!.innerText = `Score: ${scoreRef.current}`;
 
         Render.lookAt(renderRef.current, {
           min: { x: box.position.x - 600, y: 0 },
@@ -181,7 +176,7 @@ const Level1: React.FC = () => {
         overflow: "hidden",
       }}
     >
-      <div ref={sceneRef} style={{ border: "1px solid black" }} />
+      <div ref={sceneRef} />
       <div
         style={{ position: "absolute", top: 20, left: 20, color: "black" }}
       ></div>

@@ -3,15 +3,15 @@ import Matter from "matter-js";
 const spawnWorldBox = (Bodies: typeof Matter.Bodies) => {
     const ground = Bodies.rectangle(3000, 590, 7000, 20, {
         isStatic: true,
-        render: { fillStyle: "#3CB371" }, // Medium sea green
+        render: { fillStyle: "#ffffff" }, // Medium sea green
       });
       const leftWall = Bodies.rectangle(-500, 300, 1000, 1000, {
         isStatic: true,
-        render: { fillStyle: "#8B4513" }, // Saddle brown
+        render: { fillStyle: "#ffffff" }, // Saddle brown
       });
       const rightWall = Bodies.rectangle(6310, 300, 1000, 600, {
         isStatic: true,
-        render: { fillStyle: "#8B4513" },
+        render: { fillStyle: "#FFFFFF" },
       });
 
       return {ground, rightWall, leftWall};
