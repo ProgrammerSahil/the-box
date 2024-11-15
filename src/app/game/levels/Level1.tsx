@@ -2,7 +2,10 @@
 
 import React, { useEffect, useRef } from "react";
 import Matter from "matter-js";
+import { useRouter } from "next/navigation";
 import { spawnWorldBox, createObstacle } from "./builders";
+import toast from "react-hot-toast";
+import axios from "axios";
 
 const Level1: React.FC = () => {
   const sceneRef = useRef<HTMLDivElement>(null);
@@ -11,6 +14,35 @@ const Level1: React.FC = () => {
   const runnerRef = useRef<Matter.Runner | null>(null);
   const boxRef = useRef<Matter.Body | null>(null);
   const isGroundedRef = useRef(false);
+  const router = useRouter();
+  const [levelComplete, setLevelComplete] = React.useState(false);
+
+  const handleLevelComplete = async () => {
+    try {
+      const username = localStorage.getItem("username");
+
+      if (!username) {
+        toast.error("User not found");
+        router.push("/login");
+        return;
+      }
+
+      // Update the level in the database
+      const response = await axios.post("/api/users/updateLevel", {
+        username: username,
+        newLevel: 2, // Next level number
+      });
+
+      if (response.data) {
+        toast.success("Level Complete!");
+        // Navigate to the next level
+        router.push("/game/2");
+      }
+    } catch (error: any) {
+      console.error("Error updating level:", error);
+      toast.error("Failed to update level");
+    }
+  };
 
   useEffect(() => {
     const Engine = Matter.Engine;
@@ -83,9 +115,14 @@ const Level1: React.FC = () => {
           }
         }
 
-        if (pair.bodyA === endGoal || pair.bodyB === endGoal) {
-          console.log("Level Complete!");
-          // Add logic to move to the next level or show a victory screen
+        if (
+          (pair.bodyA === endGoal || pair.bodyB === endGoal) &&
+          (pair.bodyA === boxRef.current || pair.bodyB === boxRef.current)
+        ) {
+          if (!levelComplete) {
+            setLevelComplete(true);
+            handleLevelComplete();
+          }
         }
       });
     });

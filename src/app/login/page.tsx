@@ -16,7 +16,7 @@ export default function SignupPage() {
   const onLogin = async () => {
     try {
       const response = await axios.post("/api/users/login", user);
-      console.log("Login successful", response.data);
+      localStorage.setItem("username", user.username);
       toast.success("login successful");
       const level = response.data.level;
       console.log("level: " + level);
