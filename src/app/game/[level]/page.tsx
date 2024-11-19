@@ -3,8 +3,7 @@
 import React from "react";
 import { useParams } from "next/navigation";
 import Level1 from "../levels/Level1";
-//import Level2 from "../levels/Level2";
-//import Level3 from "../levels/Level3";
+import Level2 from "../levels/Level2";
 
 const MatterGamePage: React.FC = () => {
   const params = useParams();
@@ -14,8 +13,8 @@ const MatterGamePage: React.FC = () => {
     switch (level) {
       case 1:
         return <Level1 />;
-      // case 2:
-      //   return <Level2 />;
+      case 2:
+        return <Level2 />;
       // case 3:
       //   return <Level3 />;
       default:
