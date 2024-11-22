@@ -252,10 +252,10 @@ export default function Home() {
             )}
 
             <Link
-              href="/about"
+              href="/signup"
               className="px-8 py-3 text-lg font-semibold text-black bg-white rounded-lg hover:bg-gray-200 transition-colors"
             >
-              About Us
+              Sign Up
             </Link>
           </div>
         )}
