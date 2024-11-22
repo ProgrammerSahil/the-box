@@ -79,28 +79,29 @@ const Level2: React.FC = () => {
     // Spawn world elements
     const { ground, leftWall, rightWall } = spawnWorldBox(Bodies);
 
-    // Dynamic and moving obstacles
+    // Static and dynamic obstacles
     const obstacle1 = createObstacle(Bodies, 600, 520, 50, 200, "#ffffff");
     const obstacle2 = createObstacle(Bodies, 900, 400, 100, 50, "#ffffff");
+    const obstacle3 = createObstacle(Bodies, 1500, 450, 100, 30, "#ffffff");
 
-    const movingPlatform = Bodies.rectangle(1400, 400, 200, 20, {
-      isStatic: false,
-      render: { fillStyle: "#ffffff" },
+    // Red hazard lines
+    const redLine1 = Bodies.rectangle(1200, 580, 200, 5, {
+      isStatic: true,
+      render: { fillStyle: "red" },
     });
-
-    const rotatingObstacle = Bodies.rectangle(1800, 450, 150, 20, {
-      isStatic: false,
-      render: { fillStyle: "#ffffff" },
-    });
-
-    // Red line hazard
-    const redLine = Bodies.rectangle(1400, 577, 200, 5, {
+    const redLine2 = Bodies.rectangle(1800, 580, 200, 5, {
       isStatic: true,
       render: { fillStyle: "red" },
     });
 
-    // End goal
-    const endGoal = Bodies.rectangle(2200, 530, 50, 100, {
+    // Chaotic moving platform with leaning effect
+    const movingPlatform = Bodies.rectangle(2000, 400, 200, 20, {
+      isStatic: false,
+      render: { fillStyle: "#ffffff" },
+    });
+
+    // End goal moved further away
+    const endGoal = Bodies.rectangle(3000, 530, 50, 100, {
       isStatic: true,
       isSensor: true,
       render: { fillStyle: "gold" },
@@ -114,21 +115,22 @@ const Level2: React.FC = () => {
       rightWall,
       obstacle1,
       obstacle2,
+      obstacle3,
       movingPlatform,
-      rotatingObstacle,
-      redLine,
+      redLine1,
+      redLine2,
       endGoal,
     ]);
 
-    // Moving platform motion
+    // Moving platform motion with leaning effect
     Events.on(engineRef.current, "beforeUpdate", () => {
       const time = engineRef.current?.timing.timestamp || 0;
       Body.setPosition(movingPlatform, {
-        x: 1400 + Math.sin(time * 0.005) * 200,
-        y: 400, // Lowered platform for accessibility
+        x: 2000 + Math.sin(time * 0.003) * 200,
+        y: 400 + Math.sin(time * 0.006) * 50,
       });
 
-      Body.rotate(rotatingObstacle, 0.05);
+      Body.rotate(movingPlatform, Math.sin(time * 0.005) * 0.02); // Leaning effect
     });
 
     // Collision events
@@ -154,8 +156,8 @@ const Level2: React.FC = () => {
             }
           }
 
-          // Check for collision with red line
-          if (otherBody === redLine) {
+          // Check for collision with red lines
+          if (otherBody === redLine1 || otherBody === redLine2) {
             toast.error("You hit a hazard! Restarting...");
             Body.setPosition(boxRef.current, {
               x: 100,
