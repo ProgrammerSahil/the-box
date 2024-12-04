@@ -224,12 +224,26 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen">
+      <link rel="preconnect" href="https://fonts.googleapis.com"></link>
+      <link rel="preconnect" href="https://fonts.gstatic.com"></link>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Sixtyfour+Convergence&display=swap"
+        rel="stylesheet"
+      ></link>
       {/* Matter.js canvas container */}
       <div ref={sceneRef} className="absolute inset-0 z-0" />
 
       {/* Content overlay */}
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen">
-        <h1 className="text-4xl font-bold text-white mb-8">The Box</h1>
+        <h1
+          className="text-4xl font-bold text-white mb-8"
+          style={{
+            fontFamily: "'Sixtyfour Convergence', sans-serif",
+            fontVariationSettings: "'BLED' 0, 'SCAN' 0, 'XELA' 0, 'YELA' 0",
+          }}
+        >
+          The Box
+        </h1>
 
         {loading ? (
           <div className="text-white">Loading...</div>
@@ -252,10 +266,10 @@ export default function Home() {
             )}
 
             <Link
-              href="/signup"
+              href="/about"
               className="px-8 py-3 text-lg font-semibold text-black bg-white rounded-lg hover:bg-gray-200 transition-colors"
             >
-              Sign Up
+              About Us
             </Link>
           </div>
         )}

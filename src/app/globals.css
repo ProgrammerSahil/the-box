@@ -1,6 +1,7 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+@import url("https://fonts.googleapis.com/css2?family=Sixtyfour+Convergence&display=swap");
 
 :root {
   --background: #ffffff;
@@ -24,4 +25,11 @@ body {
   .text-balance {
     text-wrap: balance;
   }
+}
+
+.sixtyfour-convergence {
+  font-family: "Sixtyfour Convergence", sans-serif;
+  font-optical-sizing: auto;
+  font-variation-settings: "BLED" 0, "SCAN" 0, "XELA" 0, "YELA" 0;
+  font-weight: 400;
 }

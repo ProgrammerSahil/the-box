@@ -24,6 +24,6 @@ const createObstacle = (Bodies: typeof Matter.Bodies, x: number, y: number, widt
         render: { fillStyle: color }, 
       });
       return obstacle;
-}
+};
 
 export {spawnWorldBox, createObstacle}
