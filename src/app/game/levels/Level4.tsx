@@ -7,24 +7,15 @@ import { spawnWorldBox, createObstacle } from "./builders";
 import toast from "react-hot-toast";
 import axios from "axios";
 
-// Dialogue Overlay Component
 const DialogueOverlay: React.FC<{ onDismiss: () => void }> = ({
   onDismiss,
 }) => {
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
 
   const dialogueLines = [
-    "Oohh... finally...",
-    "Wait... again??",
-    "That was not it??...",
-    "These obstacles...",
-    "They seem more... deliberate.",
-    "Something is testing me.",
-    "But why?",
-    "I won't give up...",
-    "I'll find a way...",
-    "I am more than just a box...",
-    "I will escape...",
+    "What??",
+    "This can't keep on going...",
+    "Am I gonna have to get through this too??",
   ];
 
   useEffect(() => {
@@ -75,7 +66,7 @@ const DialogueOverlay: React.FC<{ onDismiss: () => void }> = ({
   );
 };
 
-const Level3: React.FC = () => {
+const Level4: React.FC = () => {
   const sceneRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<Matter.Engine | null>(null);
   const renderRef = useRef<Matter.Render | null>(null);
@@ -98,12 +89,12 @@ const Level3: React.FC = () => {
 
       const response = await axios.post("/api/users/updateLevel", {
         username: username,
-        newLevel: 4,
+        newLevel: 5,
       });
 
       if (response.data) {
         toast.success("Level Complete!");
-        router.push("/game/4");
+        router.push("/game/5");
       }
     } catch (error: any) {
       console.error("Error updating level:", error);
@@ -123,6 +114,7 @@ const Level3: React.FC = () => {
     const Runner = Matter.Runner;
     const Events = Matter.Events;
     const Body = Matter.Body;
+    const Constraint = Matter.Constraint;
 
     engineRef.current = Engine.create({ gravity: { x: 0, y: 1.8 } });
     renderRef.current = Render.create({
@@ -146,63 +138,102 @@ const Level3: React.FC = () => {
 
     const { ground, leftWall, rightWall } = spawnWorldBox(Bodies);
 
-    const obstacle1 = createObstacle(Bodies, 600, 520, 50, 200, "#ffffff");
-    const obstacle2 = createObstacle(Bodies, 900, 400, 100, 50, "#ffffff");
-    const obstacle3 = createObstacle(Bodies, 1500, 450, 100, 30, "#ffffff");
+    // Underground maze of deadly obstacles
+    const createUndergroundObstacle = (
+      x: number,
+      y: number,
+      width: number,
+      height: number,
+      color: string
+    ) => {
+      return Bodies.rectangle(x, y, width, height, {
+        isStatic: true,
+        render: { fillStyle: color },
+      });
+    };
 
-    const movingObstacle = Bodies.rectangle(1200, 500, 100, 20, {
-      isStatic: false,
-      render: { fillStyle: "#ffffff" },
-    });
+    const undergroundObstacles = [
+      // First underground section
+      createUndergroundObstacle(650, 570, 10, 100, "red"),
+      createUndergroundObstacle(674, 520, 54, 10, "red"),
+      createUndergroundObstacle(700, 570, 10, 100, "red"),
 
-    const verticalSaw = Bodies.rectangle(2000, 300, 10, 300, {
-      isStatic: true,
-      render: { fillStyle: "red" },
-    });
+      // Spinning blades
+      Bodies.rectangle(1200, 400, 5, 120, {
+        isStatic: true,
+        render: { fillStyle: "red" },
+      }),
 
-    const redLine1 = Bodies.rectangle(1700, 580, 200, 5, {
-      isStatic: true,
-      render: { fillStyle: "red" },
-    });
+      // Moving platforms
+      Bodies.rectangle(1300, 520, 150, 20, {
+        isStatic: false,
+        render: { fillStyle: "red" },
+      }),
 
-    const redLine2 = Bodies.rectangle(2500, 580, 200, 5, {
-      isStatic: true,
-      render: { fillStyle: "red" },
-    });
+      // Narrow passages
+      createUndergroundObstacle(2050, 575, 10, 150, "red"),
+      createUndergroundObstacle(2200, 450, 10, 150, "red"),
+    ];
 
-    const endGoal = Bodies.rectangle(3500, 530, 50, 100, {
+    // Create pendulum traps
+    const createPendulum = (x: number, y: number) => {
+      const pendulumHead = Bodies.rectangle(x - 20, y - 20, 50, 20, {
+        render: { fillStyle: "red" },
+        isStatic: false,
+        angularVelocity: 1,
+      });
+      const pendulumBase = Bodies.rectangle(x, y - 200, 5, 200, {
+        isStatic: true,
+        render: { fillStyle: "red" },
+      });
+      const pendulumConstraint = Constraint.create({
+        pointA: { x: x, y: y - 200 },
+        bodyB: pendulumHead,
+        stiffness: 0.1,
+      });
+
+      return { pendulumHead, pendulumBase, pendulumConstraint };
+    };
+
+    const pendulum2 = createPendulum(3000, 550);
+
+    // Extremely long level with multiple challenging sections
+    const endGoal = Bodies.rectangle(4500, 530, 50, 100, {
       isStatic: true,
       isSensor: true,
       render: { fillStyle: "gold" },
     });
 
-    World.add(engineRef.current.world, [
+    // Collect all bodies to add to the world
+    const worldBodies = [
       boxRef.current,
       ground,
       leftWall,
       rightWall,
-      obstacle1,
-      obstacle2,
-      obstacle3,
-      movingObstacle,
-      verticalSaw,
-      redLine1,
-      redLine2,
+      ...undergroundObstacles,
+      pendulum2.pendulumHead,
+      pendulum2.pendulumBase,
       endGoal,
-    ]);
+    ];
+
+    // Add bodies to the world
+    World.add(engineRef.current.world, worldBodies);
+
+    // Add constraints separately
+    World.add(engineRef.current.world, [pendulum2.pendulumConstraint]);
 
     Events.on(engineRef.current, "beforeUpdate", () => {
       const time = engineRef.current?.timing.timestamp || 0;
 
-      Body.setPosition(movingObstacle, {
-        x: 1200 + Math.sin(time * 0.003) * 200,
-        y: 500,
+      // Move platforms and add dynamic elements
+      const movingPlatform = undergroundObstacles[4];
+      Body.setPosition(movingPlatform, {
+        x: 1300 + Math.sin(time * 0.003) * 200,
+        y: 520,
       });
 
-      Body.setPosition(verticalSaw, {
-        x: 2000,
-        y: 300 + Math.sin(time * 0.005) * 250,
-      });
+      // Rotate pendulums
+      Body.rotate(pendulum2.pendulumHead, -0.05);
     });
 
     Events.on(engineRef.current, "collisionStart", (event) => {
@@ -222,10 +253,10 @@ const Level3: React.FC = () => {
             }
           }
 
+          // Check for hazards
           if (
-            otherBody === redLine1 ||
-            otherBody === redLine2 ||
-            otherBody === verticalSaw
+            undergroundObstacles.includes(otherBody) ||
+            otherBody === pendulum2.pendulumHead
           ) {
             toast.error("Hazard hit! Restarting...");
             Body.setPosition(boxRef.current, { x: 100, y: 500 });
@@ -277,10 +308,8 @@ const Level3: React.FC = () => {
     Runner.run(runnerRef.current, engineRef.current);
     Render.run(renderRef.current);
 
-    // Set game as initialized and trigger dialogue
     setGameInitialized(true);
 
-    // Trigger dialogue after a short delay to ensure world is rendered
     const dialogueTimer = setTimeout(() => {
       setShowDialogue(true);
     }, 1000);
@@ -324,4 +353,4 @@ const Level3: React.FC = () => {
   );
 };
 
-export default Level3;
+export default Level4;
