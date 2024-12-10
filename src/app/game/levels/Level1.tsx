@@ -66,13 +66,13 @@ const Level1: React.FC = () => {
     runnerRef.current = Runner.create();
 
     boxRef.current = Bodies.rectangle(100, 500, 20, 20, {
-      render: { fillStyle: "#ffffff" }, // Black playable cube
+      render: { fillStyle: "#ffffff" }, 
       frictionAir: 0.001,
       friction: 0.1,
       restitution: 0.1,
     });
 
-    const { ground, leftWall, rightWall } = spawnWorldBox(Bodies); // Black walls and ground
+    const { ground, leftWall, rightWall } = spawnWorldBox(Bodies); 
 
     // **More Challenging Obstacles**
     const obstacle1 = createObstacle(Bodies, 800, 520, 50, 200, "#ffffff"); // Black obstacle
