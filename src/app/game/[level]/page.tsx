@@ -5,6 +5,7 @@ import Level1 from "../levels/Level1";
 import Level2 from "../levels/Level2";
 import Level3 from "../levels/Level3";
 import Level4 from "../levels/Level4";
+import Level5 from "../levels/Level5";
 
 const MatterGamePage: React.FC = () => {
   const params = useParams();
@@ -21,6 +22,7 @@ const MatterGamePage: React.FC = () => {
       case 4:
         return <Level4 />;
       case 5:
+        return <Level5 />;
       default:
         return <div>Invalid level selected</div>;
     }
