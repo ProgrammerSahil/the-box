@@ -141,56 +141,77 @@ const Level5: React.FC = () => {
 
     const { ground, leftWall, rightWall } = spawnWorldBox(Bodies);
 
-    // Underground maze of deadly obstacles
-    const createUndergroundObstacle = (
+    // Create multiple red platforms with challenging configurations
+    const createRedPlatform = (
       x: number,
       y: number,
       width: number,
-      height: number,
-      color: string
+      height: number
     ) => {
-      return Bodies.rectangle(x, y, width, height, {
+      const platform = Bodies.rectangle(x, y, width, height, {
         isStatic: true,
-        render: { fillStyle: color },
+        render: { fillStyle: "red" },
       });
+      return platform;
     };
 
-    const undergroundObstacles = [
-      // First underground section
-      createUndergroundObstacle(650, 570, 10, 100, "red"),
-      createUndergroundObstacle(674, 520, 54, 10, "red"),
-      createUndergroundObstacle(700, 570, 10, 100, "red"),
+    const redPlatforms = [
+      // First section: Clustered platforms closer to ground
+      createRedPlatform(400, 520, 190, 20),
+      createRedPlatform(600, 430, 140, 20),
+      createRedPlatform(800, 330, 90, 20),
 
-      createUndergroundObstacle(1000, 570, 10, 100, "red"),
-      createUndergroundObstacle(1024, 520, 54, 10, "red"),
-      createUndergroundObstacle(1050, 570, 10, 100, "red"),
+      // More platforms with varied heights
+      createRedPlatform(1200, 550, 190, 20),
+      createRedPlatform(1600, 470, 140, 20),
 
-      
+      // High platforms
+      createRedPlatform(2000, 530, 90, 20),
+      createRedPlatform(2350, 530, 140, 20),
+      createRedPlatform(2750, 480, 190, 20),
 
+      // Narrow platforms
+      createRedPlatform(2800, 430, 40, 20),
+      createRedPlatform(3000, 380, 40, 20),
+      createRedPlatform(3200, 530, 40, 20),
+
+      // Additional platforms for increased difficulty
+      createRedPlatform(1000, 380, 100, 20),
+      createRedPlatform(1500, 300, 120, 20),
+      createRedPlatform(2200, 250, 80, 20),
+      createRedPlatform(2600, 350, 110, 20),
+      createRedPlatform(3400, 450, 90, 20),
+      createRedPlatform(3700, 300, 70, 20),
+      createRedPlatform(4000, 500, 130, 20),
+      createRedPlatform(4300, 400, 100, 20),
     ];
 
-    // Create pendulum traps
-    const createPendulum = (x: number, y: number) => {
-      const pendulumHead = Bodies.rectangle(x - 20, y - 20, 50, 20, {
-        render: { fillStyle: "red" },
+    // Spinning obstacles
+    const createSpinningObstacle = (x: number, y: number) => {
+      const obstacle = Bodies.rectangle(x, y, 100, 10, {
         isStatic: false,
-        angularVelocity: 1,
+        render: { fillStyle: "darkred" },
+        angularVelocity: 0.5,
       });
-      const pendulumBase = Bodies.rectangle(x, y - 200, 5, 200, {
+      const base = Bodies.rectangle(x, y - 100, 10, 200, {
         isStatic: true,
-        render: { fillStyle: "red" },
+        render: { fillStyle: "darkred" },
       });
-      const pendulumConstraint = Constraint.create({
-        pointA: { x: x, y: y - 200 },
-        bodyB: pendulumHead,
+      const constraint = Constraint.create({
+        pointA: { x: x, y: y - 100 },
+        bodyB: obstacle,
         stiffness: 0.1,
       });
-
-      return { pendulumHead, pendulumBase, pendulumConstraint };
+      return { obstacle, base, constraint };
     };
 
+    // More spinning obstacles
+    const spinningObstacle1 = createSpinningObstacle(1800, 350);
+    const spinningObstacle2 = createSpinningObstacle(3500, 450);
+    const spinningObstacle3 = createSpinningObstacle(2200, 500);
+    const spinningObstacle4 = createSpinningObstacle(4100, 350);
 
-    // Extremely long level with multiple challenging sections
+    // End goal
     const endGoal = Bodies.rectangle(4500, 530, 50, 100, {
       isStatic: true,
       isSensor: true,
@@ -203,25 +224,28 @@ const Level5: React.FC = () => {
       ground,
       leftWall,
       rightWall,
-      ...undergroundObstacles,
+      ...redPlatforms,
+      spinningObstacle1.obstacle,
+      spinningObstacle1.base,
+      spinningObstacle2.obstacle,
+      spinningObstacle2.base,
+      spinningObstacle3.obstacle,
+      spinningObstacle3.base,
+      spinningObstacle4.obstacle,
+      spinningObstacle4.base,
       endGoal,
     ];
 
     // Add bodies to the world
     World.add(engineRef.current.world, worldBodies);
 
-
-    Events.on(engineRef.current, "beforeUpdate", () => {
-      const time = engineRef.current?.timing.timestamp || 0;
-
-      // Move platforms and add dynamic elements
-      const movingPlatform = undergroundObstacles[4];
-      Body.setPosition(movingPlatform, {
-        x: 1300 + Math.sin(time * 0.003) * 200,
-        y: 520,
-      });
-
-    });
+    // Add constraints separately
+    World.add(engineRef.current.world, [
+      spinningObstacle1.constraint,
+      spinningObstacle2.constraint,
+      spinningObstacle3.constraint,
+      spinningObstacle4.constraint,
+    ]);
 
     Events.on(engineRef.current, "collisionStart", (event) => {
       event.pairs.forEach((pair) => {
@@ -242,7 +266,11 @@ const Level5: React.FC = () => {
 
           // Check for hazards
           if (
-            undergroundObstacles.includes(otherBody) 
+            redPlatforms.includes(otherBody) ||
+            otherBody === spinningObstacle1.obstacle ||
+            otherBody === spinningObstacle2.obstacle ||
+            otherBody === spinningObstacle3.obstacle ||
+            otherBody === spinningObstacle4.obstacle
           ) {
             toast.error("Hazard hit! Restarting...");
             Body.setPosition(boxRef.current, { x: 100, y: 500 });
