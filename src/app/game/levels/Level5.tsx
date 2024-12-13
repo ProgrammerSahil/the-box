@@ -69,7 +69,7 @@ const DialogueOverlay: React.FC<{ onDismiss: () => void }> = ({
   );
 };
 
-const Level4: React.FC = () => {
+const Level5: React.FC = () => {
   const sceneRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<Matter.Engine | null>(null);
   const renderRef = useRef<Matter.Render | null>(null);
@@ -339,4 +339,4 @@ const Level4: React.FC = () => {
   );
 };
 
-export default Level4;
+export default Level5;
