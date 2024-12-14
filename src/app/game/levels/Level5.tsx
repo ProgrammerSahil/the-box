@@ -13,12 +13,11 @@ const DialogueOverlay: React.FC<{ onDismiss: () => void }> = ({
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
 
   const dialogueLines = [
-    "No",
-    "I see it now",
-    "I can't complete these levels...",
-    "they're merely a test",
-    "im stuck here forever",
-    "unless i can get across these walls..",
+    "A hidden path lies ahead...",
+    "I must navigate these obstacles with care",
+    "The exit is within reach, if I can just get across",
+    "Victory is close, but the challenge remains",
+    "I can do this, I just need to keep going!",
   ];
 
   useEffect(() => {
@@ -44,8 +43,7 @@ const DialogueOverlay: React.FC<{ onDismiss: () => void }> = ({
         left: 0,
         width: "100%",
         height: "100%",
-        marginLeft: "200px",
-        backgroundColor: "rgba(0,0,0,0)",
+        backgroundColor: "rgba(0,0,0,0.7)",
         color: "white",
         display: "flex",
         justifyContent: "center",
@@ -81,7 +79,7 @@ const Level5: React.FC = () => {
   const [showDialogue, setShowDialogue] = useState(false);
   const [gameInitialized, setGameInitialized] = useState(false);
 
-  const handleLevelComplete = async () => {
+  const handleLevelComplete = async (secretExit: boolean = false) => {
     try {
       const username = localStorage.getItem("username");
       if (!username) {
@@ -93,10 +91,11 @@ const Level5: React.FC = () => {
       const response = await axios.post("/api/users/updateLevel", {
         username: username,
         newLevel: 6,
+        secretPath: secretExit,
       });
 
       if (response.data) {
-        toast.success("Level Complete!");
+        toast.success(secretExit ? "Secret Path Discovered!" : "Level Complete!");
         router.push("/game/6");
       }
     } catch (error: any) {
@@ -141,77 +140,38 @@ const Level5: React.FC = () => {
 
     const { ground, leftWall, rightWall } = spawnWorldBox(Bodies);
 
-    // Create multiple red platforms with challenging configurations
-    const createRedPlatform = (
-      x: number,
-      y: number,
-      width: number,
-      height: number
-    ) => {
-      const platform = Bodies.rectangle(x, y, width, height, {
-        isStatic: true,
-        render: { fillStyle: "red" },
-      });
-      return platform;
-    };
-
+    // Create the main obstacle platforms
     const redPlatforms = [
-      // First section: Clustered platforms closer to ground
-      createRedPlatform(400, 520, 190, 20),
-      createRedPlatform(600, 430, 140, 20),
-      createRedPlatform(800, 330, 90, 20),
-
-      // More platforms with varied heights
-      createRedPlatform(1200, 550, 190, 20),
-      createRedPlatform(1600, 470, 140, 20),
-
-      // High platforms
-      createRedPlatform(2000, 530, 90, 20),
-      createRedPlatform(2350, 530, 140, 20),
-      createRedPlatform(2750, 480, 190, 20),
-
-      // Narrow platforms
-      createRedPlatform(2800, 430, 40, 20),
-      createRedPlatform(3000, 380, 40, 20),
-      createRedPlatform(3200, 530, 40, 20),
-
-      // Additional platforms for increased difficulty
-      createRedPlatform(1000, 380, 100, 20),
-      createRedPlatform(1500, 300, 120, 20),
-      createRedPlatform(2200, 250, 80, 20),
-      createRedPlatform(2600, 350, 110, 20),
-      createRedPlatform(3400, 450, 90, 20),
-      createRedPlatform(3700, 300, 70, 20),
-      createRedPlatform(4000, 500, 130, 20),
-      createRedPlatform(4300, 400, 100, 20),
+      Bodies.rectangle(400, 520, 190, 20, { isStatic: true, render: { fillStyle: "darkred" } }),
+      Bodies.rectangle(600, 430, 140, 20, { isStatic: true, render: { fillStyle: "darkred" }, angle: Math.PI / 6 }),
+      Bodies.rectangle(800, 330, 90, 20, { isStatic: true, render: { fillStyle: "darkred" }, angle: -Math.PI / 4 }),
+      Bodies.rectangle(1200, 550, 190, 20, { isStatic: true, render: { fillStyle: "darkred" } }),
+      Bodies.rectangle(1600, 470, 140, 20, { isStatic: true, render: { fillStyle: "darkred" }, angle: Math.PI / 3 }),
+      Bodies.rectangle(2000, 530, 90, 20, { isStatic: true, render: { fillStyle: "darkred" } }),
+      Bodies.rectangle(2350, 530, 140, 20, { isStatic: true, render: { fillStyle: "darkred" }, angle: -Math.PI / 6 }),
+      Bodies.rectangle(2750, 480, 190, 20, { isStatic: true, render: { fillStyle: "darkred" } }),
     ];
 
     // Spinning obstacles
-    const createSpinningObstacle = (x: number, y: number) => {
-      const obstacle = Bodies.rectangle(x, y, 100, 10, {
-        isStatic: false,
-        render: { fillStyle: "darkred" },
-        angularVelocity: 0.5,
-      });
-      const base = Bodies.rectangle(x, y - 100, 10, 200, {
-        isStatic: true,
-        render: { fillStyle: "darkred" },
-      });
-      const constraint = Constraint.create({
-        pointA: { x: x, y: y - 100 },
-        bodyB: obstacle,
-        stiffness: 0.1,
-      });
-      return { obstacle, base, constraint };
-    };
+    const spinningObstacles = [
+      createAdvancedSpinningObstacle(1800, 350),
+      createAdvancedSpinningObstacle(3500, 450),
+      createAdvancedSpinningObstacle(2200, 500),
+      createAdvancedSpinningObstacle(4100, 350),
+    ];
 
-    // More spinning obstacles
-    const spinningObstacle1 = createSpinningObstacle(1800, 350);
-    const spinningObstacle2 = createSpinningObstacle(3500, 450);
-    const spinningObstacle3 = createSpinningObstacle(2200, 500);
-    const spinningObstacle4 = createSpinningObstacle(4100, 350);
+    // Secret exit path
+    const secretExitWall = Bodies.rectangle(3800, 0, 50, 600, {
+      isStatic: true,
+      render: { fillStyle: "grey" },
+    });
+    const secretExitPlatform = Bodies.rectangle(3850, 530, 50, 100, {
+      isStatic: true,
+      isSensor: true,
+      render: { fillStyle: "green" },
+    });
 
-    // End goal
+    // Main end goal
     const endGoal = Bodies.rectangle(4500, 530, 50, 100, {
       isStatic: true,
       isSensor: true,
@@ -225,27 +185,20 @@ const Level5: React.FC = () => {
       leftWall,
       rightWall,
       ...redPlatforms,
-      spinningObstacle1.obstacle,
-      spinningObstacle1.base,
-      spinningObstacle2.obstacle,
-      spinningObstacle2.base,
-      spinningObstacle3.obstacle,
-      spinningObstacle3.base,
-      spinningObstacle4.obstacle,
-      spinningObstacle4.base,
+      ...spinningObstacles.flatMap((obs) => [obs.obstacle, obs.base]),
       endGoal,
+      secretExitWall,
+      secretExitPlatform,
     ];
 
     // Add bodies to the world
     World.add(engineRef.current.world, worldBodies);
 
-    // Add constraints separately
-    World.add(engineRef.current.world, [
-      spinningObstacle1.constraint,
-      spinningObstacle2.constraint,
-      spinningObstacle3.constraint,
-      spinningObstacle4.constraint,
-    ]);
+    // Add constraints
+    World.add(
+      engineRef.current.world,
+      spinningObstacles.map((obs) => obs.constraint)
+    );
 
     Events.on(engineRef.current, "collisionStart", (event) => {
       event.pairs.forEach((pair) => {
@@ -257,6 +210,12 @@ const Level5: React.FC = () => {
             isGroundedRef.current = true;
           }
 
+          // Handle secret exit
+          if (otherBody === secretExitPlatform) {
+            handleLevelComplete(true);
+          }
+
+          // Handle main end goal
           if (otherBody === endGoal) {
             if (!levelComplete) {
               setLevelComplete(true);
@@ -267,10 +226,9 @@ const Level5: React.FC = () => {
           // Check for hazards
           if (
             redPlatforms.includes(otherBody) ||
-            otherBody === spinningObstacle1.obstacle ||
-            otherBody === spinningObstacle2.obstacle ||
-            otherBody === spinningObstacle3.obstacle ||
-            otherBody === spinningObstacle4.obstacle
+            spinningObstacles.some(
+              (obs) => otherBody === obs.obstacle || otherBody === obs.base
+            )
           ) {
             toast.error("Hazard hit! Restarting...");
             Body.setPosition(boxRef.current, { x: 100, y: 500 });
@@ -348,6 +306,24 @@ const Level5: React.FC = () => {
     };
   }, []);
 
+  const createAdvancedSpinningObstacle = (x: number, y: number) => {
+    const obstacle = Matter.Bodies.rectangle(x, y, 150, 15, {
+      isStatic: false,
+      render: { fillStyle: "crimson" },
+      angularVelocity: Math.random() > 0.5 ? 0.7 : -0.7,
+    });
+    const base = Matter.Bodies.rectangle(x, y - 100, 15, 50, {
+      isStatic: true,
+      render: { fillStyle: "darkred" },
+    });
+    const constraint = Matter.Constraint.create({
+      pointA: { x: x, y: y - 100 },
+      bodyB: obstacle,
+      stiffness: 0.05,
+    });
+    return { obstacle, base, constraint };
+  };
+
   return (
     <div
       style={{
@@ -361,7 +337,6 @@ const Level5: React.FC = () => {
       {gameInitialized && showDialogue && (
         <DialogueOverlay onDismiss={handleDismissDialogue} />
       )}
-
       <div ref={sceneRef} />
     </div>
   );
