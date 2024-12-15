@@ -152,7 +152,6 @@ const Level5: React.FC = () => {
       Bodies.rectangle(2750, 480, 190, 20, { isStatic: true, render: { fillStyle: "darkred" } }),
     ];
 
-    // Spinning obstacles
     const spinningObstacles = [
       createAdvancedSpinningObstacle(1800, 350),
       createAdvancedSpinningObstacle(3500, 450),
@@ -160,7 +159,7 @@ const Level5: React.FC = () => {
       createAdvancedSpinningObstacle(4100, 350),
     ];
 
-    // Secret exit path
+    //exit path
     const secretExitWall = Bodies.rectangle(3800, 0, 50, 600, {
       isStatic: true,
       render: { fillStyle: "grey" },
