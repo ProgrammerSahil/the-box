@@ -13,11 +13,11 @@ const DialogueOverlay: React.FC<{ onDismiss: () => void }> = ({
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
 
   const dialogueLines = [
-    "A hidden path lies ahead...",
-    "I must navigate these obstacles with care",
-    "The exit is within reach, if I can just get across",
-    "Victory is close, but the challenge remains",
-    "I can do this, I just need to keep going!",
+    "The path seems endless...",
+    "Each obstacle tests my resolve",
+    "Is escape truly possible?",
+    "Something feels... off",
+    "There must be another way...",
   ];
 
   useEffect(() => {
@@ -95,7 +95,7 @@ const Level5: React.FC = () => {
       });
 
       if (response.data) {
-        toast.success(secretExit ? "Secret Path Discovered!" : "Level Complete!");
+        toast.success(secretExit ? "Anomaly Detected..." : "Level Complete");
         router.push("/game/6");
       }
     } catch (error: any) {
@@ -140,41 +140,38 @@ const Level5: React.FC = () => {
 
     const { ground, leftWall, rightWall } = spawnWorldBox(Bodies);
 
-    // Create the main obstacle platforms
+    // Create extremely challenging obstacle platforms
     const redPlatforms = [
-      Bodies.rectangle(400, 520, 190, 20, { isStatic: true, render: { fillStyle: "darkred" } }),
-      Bodies.rectangle(600, 430, 140, 20, { isStatic: true, render: { fillStyle: "darkred" }, angle: Math.PI / 6 }),
-      Bodies.rectangle(800, 330, 90, 20, { isStatic: true, render: { fillStyle: "darkred" }, angle: -Math.PI / 4 }),
-      Bodies.rectangle(1200, 550, 190, 20, { isStatic: true, render: { fillStyle: "darkred" } }),
-      Bodies.rectangle(1600, 470, 140, 20, { isStatic: true, render: { fillStyle: "darkred" }, angle: Math.PI / 3 }),
-      Bodies.rectangle(2000, 530, 90, 20, { isStatic: true, render: { fillStyle: "darkred" } }),
-      Bodies.rectangle(2350, 530, 140, 20, { isStatic: true, render: { fillStyle: "darkred" }, angle: -Math.PI / 6 }),
-      Bodies.rectangle(2750, 480, 190, 20, { isStatic: true, render: { fillStyle: "darkred" } }),
+      Bodies.rectangle(400, 520, 190, 10, { isStatic: true, render: { fillStyle: "darkred" } }),
+      Bodies.rectangle(600, 430, 140, 10, { isStatic: true, render: { fillStyle: "darkred" }, angle: Math.PI / 4 }),
+      Bodies.rectangle(800, 330, 90, 10, { isStatic: true, render: { fillStyle: "darkred" }, angle: -Math.PI / 3 }),
+      Bodies.rectangle(1200, 550, 190, 10, { isStatic: true, render: { fillStyle: "darkred" } }),
+      Bodies.rectangle(1600, 470, 140, 10, { isStatic: true, render: { fillStyle: "darkred" }, angle: Math.PI / 2 }),
+      Bodies.rectangle(2000, 530, 90, 10, { isStatic: true, render: { fillStyle: "darkred" } }),
+      Bodies.rectangle(2350, 530, 140, 10, { isStatic: true, render: { fillStyle: "darkred" }, angle: -Math.PI / 4 }),
+      Bodies.rectangle(2750, 480, 190, 10, { isStatic: true, render: { fillStyle: "darkred" } }),
     ];
 
+    // More aggressive spinning obstacles
     const spinningObstacles = [
-      createAdvancedSpinningObstacle(1800, 350),
-      createAdvancedSpinningObstacle(3500, 450),
-      createAdvancedSpinningObstacle(2200, 500),
-      createAdvancedSpinningObstacle(4100, 350),
+      createAdvancedSpinningObstacle(1800, 350, 2),
+      createAdvancedSpinningObstacle(3500, 400, -2),
+      createAdvancedSpinningObstacle(2200, 400, 1.5),
+      createAdvancedSpinningObstacle(4100, 350, -1.5),
     ];
 
-    //exit path
-    const secretExitWall = Bodies.rectangle(3800, 0, 50, 600, {
-      isStatic: true,
-      render: { fillStyle: "grey" },
-    });
-    const secretExitPlatform = Bodies.rectangle(3850, 530, 50, 100, {
+    // Secret exit hidden right next to the left wall, colored white to blend in
+    const secretExitHole = Bodies.rectangle(50, 550, 20, 20, {
       isStatic: true,
       isSensor: true,
-      render: { fillStyle: "green" },
+      render: { fillStyle: "#ffffff" }  // White to blend with left wall
     });
 
-    // Main end goal
-    const endGoal = Bodies.rectangle(4500, 530, 50, 100, {
+    // Extremely far and challenging end goal
+    const mainEndGoal = Bodies.rectangle(5500, 530, 50, 100, {
       isStatic: true,
       isSensor: true,
-      render: { fillStyle: "gold" },
+      render: { fillStyle: "rgba(255,215,0,0.3)" },
     });
 
     // Collect all bodies to add to the world
@@ -185,9 +182,8 @@ const Level5: React.FC = () => {
       rightWall,
       ...redPlatforms,
       ...spinningObstacles.flatMap((obs) => [obs.obstacle, obs.base]),
-      endGoal,
-      secretExitWall,
-      secretExitPlatform,
+      secretExitHole,
+      mainEndGoal
     ];
 
     // Add bodies to the world
@@ -209,13 +205,13 @@ const Level5: React.FC = () => {
             isGroundedRef.current = true;
           }
 
-          // Handle secret exit
-          if (otherBody === secretExitPlatform) {
+          // Handle secret exit hole (blends with left wall)
+          if (otherBody === secretExitHole) {
             handleLevelComplete(true);
           }
 
-          // Handle main end goal
-          if (otherBody === endGoal) {
+          // Handle main end goal (extremely far and hard to reach)
+          if (otherBody === mainEndGoal) {
             if (!levelComplete) {
               setLevelComplete(true);
               handleLevelComplete();
@@ -305,11 +301,11 @@ const Level5: React.FC = () => {
     };
   }, []);
 
-  const createAdvancedSpinningObstacle = (x: number, y: number) => {
+  const createAdvancedSpinningObstacle = (x: number, y: number, angularVelocity: number) => {
     const obstacle = Matter.Bodies.rectangle(x, y, 150, 15, {
       isStatic: false,
       render: { fillStyle: "crimson" },
-      angularVelocity: Math.random() > 0.5 ? 0.7 : -0.7,
+      angularVelocity: angularVelocity,
     });
     const base = Matter.Bodies.rectangle(x, y - 100, 15, 50, {
       isStatic: true,
