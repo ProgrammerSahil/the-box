@@ -175,7 +175,6 @@ const Level4: React.FC = () => {
       createUndergroundObstacle(2200, 450, 10, 150, "red"),
     ];
 
-    // Create pendulum traps
     const createPendulum = (x: number, y: number) => {
       const pendulumHead = Bodies.rectangle(x - 20, y - 20, 50, 20, {
         render: { fillStyle: "red" },
