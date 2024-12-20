@@ -7,17 +7,13 @@ import { spawnWorldBox, createObstacle } from "./builders";
 import toast from "react-hot-toast";
 import axios from "axios";
 
-const DialogueOverlay: React.FC<{ onDismiss: () => void }> = ({
-  onDismiss,
-}) => {
+const DialogueOverlay: React.FC<{ onDismiss: () => void }> = ({ onDismiss }) => {
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
 
   const dialogueLines = [
-    "The path seems endless...",
-    "Each obstacle tests my resolve",
-    "Is escape truly possible?",
-    "Something feels... off",
-    "There must be another way...",
+    "No this cant be real...",
+    "This looks too difficult",
+    "Is there another way out of these walls?"
   ];
 
   useEffect(() => {
@@ -140,6 +136,13 @@ const Level5: React.FC = () => {
 
     const { ground, leftWall, rightWall } = spawnWorldBox(Bodies);
 
+    // Secret exit with slight visibility
+    const secretExitHole = Bodies.rectangle(50, 550, 20, 30, {
+      isStatic: true,
+      isSensor: true,
+      render: { fillStyle: "rgba(255, 255, 255, 0.1)" }  // Slightly visible white
+    });
+
     // Create extremely challenging obstacle platforms
     const redPlatforms = [
       Bodies.rectangle(400, 520, 190, 10, { isStatic: true, render: { fillStyle: "darkred" } }),
@@ -159,13 +162,6 @@ const Level5: React.FC = () => {
       createAdvancedSpinningObstacle(2200, 400, 1.5),
       createAdvancedSpinningObstacle(4100, 350, -1.5),
     ];
-
-    // Secret exit hidden right next to the left wall, colored white to blend in
-    const secretExitHole = Bodies.rectangle(50, 550, 20, 20, {
-      isStatic: true,
-      isSensor: true,
-      render: { fillStyle: "#ffffff" }  // White to blend with left wall
-    });
 
     // Extremely far and challenging end goal
     const mainEndGoal = Bodies.rectangle(5500, 530, 50, 100, {
@@ -205,12 +201,12 @@ const Level5: React.FC = () => {
             isGroundedRef.current = true;
           }
 
-          // Handle secret exit hole (blends with left wall)
+          // Handle secret exit hole
           if (otherBody === secretExitHole) {
             handleLevelComplete(true);
           }
 
-          // Handle main end goal (extremely far and hard to reach)
+          // Handle main end goal
           if (otherBody === mainEndGoal) {
             if (!levelComplete) {
               setLevelComplete(true);
