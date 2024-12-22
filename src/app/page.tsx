@@ -67,7 +67,7 @@ export default function Home() {
     const buttonSpacing = 20;
     const totalWidth = buttonWidth * 2 + buttonSpacing;
     const startX = (window.innerWidth - totalWidth) / 2;
-    const buttonY = window.innerHeight / 2 + 50;
+    const buttonY = window.innerHeight / 2 - 10;
 
     // Create falling boxes with concentrated spawn area
     const boxes: Matter.Body[] = [];
@@ -230,6 +230,10 @@ export default function Home() {
         href="https://fonts.googleapis.com/css2?family=Sixtyfour+Convergence&display=swap"
         rel="stylesheet"
       ></link>
+      <link
+        href="https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@700&display=swap"
+        rel="stylesheet"
+      ></link>
       {/* Matter.js canvas container */}
       <div ref={sceneRef} className="absolute inset-0 z-0" />
 
@@ -273,6 +277,9 @@ export default function Home() {
             </Link>
           </div>
         )}
+        <h2 className="mt-20 text-white text-2xl font-bold tracking-wider">
+          In an AI Research Lab at Los Alamos
+        </h2>
       </div>
     </div>
   );
