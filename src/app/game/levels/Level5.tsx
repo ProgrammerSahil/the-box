@@ -88,7 +88,7 @@ const Level5: React.FC = () => {
 
       if (response.data) {
         toast.success(secretExit ? "Anomaly Detected..." : "Level Complete");
-        router.push("/game/6");
+        router.push("/game/404");
       }
     } catch (error: any) {
       console.error("Error updating level:", error);
@@ -171,7 +171,6 @@ const Level5: React.FC = () => {
       }
     }, 100);
 
-    // Create extremely challenging obstacle platforms
     const redPlatforms = [
       Bodies.rectangle(400, 490, 190, 10, { isStatic: true, render: { fillStyle: "darkred" } }),
       Bodies.rectangle(600, 430, 140, 10, { isStatic: true, render: { fillStyle: "darkred" }, angle: Math.PI / 4 }),
