@@ -3,6 +3,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import Matter from "matter-js";
 import { useRouter } from "next/navigation";
+import { spawnWorldBox } from "./builders";
 import toast from "react-hot-toast";
 import axios from "axios";
 
@@ -31,12 +32,14 @@ const Unknown0: React.FC = () => {
   const renderRef = useRef<Matter.Render | null>(null);
   const runnerRef = useRef<Matter.Runner | null>(null);
   const playerRef = useRef<Matter.Body | null>(null);
+  const bouncingBallsRef = useRef<Matter.Body[]>([]);
+  const whiteSpinnersRef = useRef<{ obstacle: Matter.Body; constraint: Matter.Constraint }[]>([]);
   const isGroundedRef = useRef(false);
   const glitchIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const realityBreakRef = useRef<number>(0);
   const router = useRouter();
   const [showGlitchText, setShowGlitchText] = useState(false);
-  const [glitchMessages, setGlitchMessages] = useState<Array<{ text: string; position: { x: number; y: number } }>>([]); 
+  const [glitchMessages, setGlitchMessages] = useState<Array<{ text: string; position: { x: number; y: number } }>>([]);
 
   const handleLevelComplete = async () => {
     try {
@@ -73,7 +76,7 @@ const Unknown0: React.FC = () => {
     const Runner = Matter.Runner;
     const Events = Matter.Events;
     const Body = Matter.Body;
-    const Composite = Matter.Composite;
+    const Constraint = Matter.Constraint;
 
     engineRef.current = Engine.create({ gravity: { x: 0, y: 1.8 } });
     renderRef.current = Render.create({
@@ -88,7 +91,7 @@ const Unknown0: React.FC = () => {
     });
     runnerRef.current = Runner.create();
 
-    // Create glitchy player
+    // Create player
     playerRef.current = Bodies.rectangle(100, 500, 20, 20, {
       render: {
         fillStyle: "#ffffff",
@@ -100,30 +103,87 @@ const Unknown0: React.FC = () => {
       restitution: 0.2,
     });
 
-    // Create reality-breaking platforms with glitch effects
-    const createGlitchPlatform = (x: number, y: number, width: number, height: number) => {
-      return Bodies.rectangle(x, y, width, height, {
-        isStatic: true,
+    const { ground, leftWall, rightWall } = spawnWorldBox(Bodies);
+
+    // Create hazardous red platforms
+    const redPlatforms = [
+      Bodies.rectangle(400, 490, 190, 10, { isStatic: true, render: { fillStyle: "#880000" } }),
+      Bodies.rectangle(800, 430, 140, 10, { isStatic: true, render: { fillStyle: "#880000" }, angle: Math.PI / 4 }),
+      Bodies.rectangle(1200, 330, 90, 10, { isStatic: true, render: { fillStyle: "#880000" }, angle: -Math.PI / 3 }),
+      Bodies.rectangle(1600, 550, 190, 10, { isStatic: true, render: { fillStyle: "#880000" } }),
+      Bodies.rectangle(2000, 470, 140, 10, { isStatic: true, render: { fillStyle: "#880000" }, angle: Math.PI / 2 }),
+    ];
+
+    // Create many bouncing balls
+    const createBouncingBall = (x: number, y: number) => {
+      const size = 8 + Math.random() * 12; // Random size between 8 and 20
+      return Bodies.circle(x, y, size, {
+        restitution: 0.9,
+        friction: 0,
+        frictionAir: 0,
+        density: 0.0005, // Very light
         render: {
-          fillStyle: "#333333",
-          strokeStyle: "#ff0000",
-          lineWidth: Math.random() > 0.5 ? 2 : 0
+          fillStyle: '#ff00ff',
+          strokeStyle: '#00ffff',
+          lineWidth: 2,
+          opacity: 0.7
         }
       });
     };
 
-    // Create a long series of increasingly difficult platforms
-    const platforms = [];
-    for (let i = 0; i < 20; i++) {
-      const x = 300 + i * 300;
-      const y = 500 - (Math.sin(i * 0.5) * 200);
-      const width = 100 - (i * 2);
-      platforms.push(createGlitchPlatform(x, y, width, 10));
+    // Add 50 bouncing balls
+    for (let i = 0; i < 50; i++) {
+      const ball = createBouncingBall(
+        400 + (i % 10) * 200 + Math.random() * 100,
+        200 + Math.floor(i / 10) * 100 + Math.random() * 50
+      );
+      Body.setVelocity(ball, {
+        x: (Math.random() - 0.5) * 5,
+        y: (Math.random() - 0.5) * 5
+      });
+      bouncingBallsRef.current.push(ball);
     }
 
-    const realityBreaks: Matter.Body[] = [];
-    for (let i = 0; i < 10; i++) {
-      const breakZone = Bodies.circle(800 + (i * 600), 300 + (Math.sin(i) * 100), 30, {
+    // Create white spinners
+    const createWhiteSpinner = (x: number, y: number) => {
+      const width = 100 + Math.random() * 100;
+      const height = 10;
+      const obstacle = Bodies.rectangle(x, y, width, height, {
+        render: {
+          fillStyle: "#ffffff",
+          opacity: 0.6
+        },
+        density: 0.001,
+        frictionAir: 0.001
+      });
+
+      const constraint = Constraint.create({
+        pointA: { x, y },
+        bodyB: obstacle,
+        stiffness: 1,
+        render: {
+          visible: true,
+          strokeStyle: '#ffffff',
+        }
+      });
+
+      Body.setAngularVelocity(obstacle, (Math.random() - 0.5) * 0.2);
+      
+      return { obstacle, constraint };
+    };
+
+    // Add white spinners throughout the level
+    for (let i = 0; i < 15; i++) {
+      const spinner = createWhiteSpinner(
+        600 + i * 300,
+        250 + Math.sin(i) * 100
+      );
+      whiteSpinnersRef.current.push(spinner);
+    }
+
+    // Create reality breach zones
+    const realityBreaks = Array(8).fill(null).map((_, i) => {
+      return Bodies.circle(800 + (i * 600), 300 + (Math.sin(i) * 150), 30, {
         isStatic: true,
         isSensor: true,
         render: {
@@ -131,11 +191,10 @@ const Unknown0: React.FC = () => {
           opacity: 0.5
         }
       });
-      realityBreaks.push(breakZone);
-    }
+    });
 
-    // Create the final reality breach point
-    const finalBreach = Bodies.rectangle(6000, 300, 50, 100, {
+    // Final breach point
+    const finalBreach = Bodies.rectangle(5000, 300, 50, 100, {
       isStatic: true,
       isSensor: true,
       render: {
@@ -147,7 +206,13 @@ const Unknown0: React.FC = () => {
     // Add everything to the world
     World.add(engineRef.current.world, [
       playerRef.current,
-      ...platforms,
+      ground,
+      leftWall,
+      rightWall,
+      ...redPlatforms,
+      ...bouncingBallsRef.current,
+      ...whiteSpinnersRef.current.map(s => s.obstacle),
+      ...whiteSpinnersRef.current.map(s => s.constraint),
       ...realityBreaks,
       finalBreach
     ]);
@@ -155,46 +220,82 @@ const Unknown0: React.FC = () => {
     // Reality distortion effects
     glitchIntervalRef.current = setInterval(() => {
       if (playerRef.current && renderRef.current) {
-        // Random visual glitches
-        renderRef.current.options.background = Math.random() > 0.95 ? "#ffffff" : "#000000";
-        
-        // Distort gravity based on reality breaks triggered
+        // Random background glitches
+        if (Math.random() > 0.95) {
+          renderRef.current.options.background = Math.random() > 0.5 ? "#ff0000" : "#000000";
+          setTimeout(() => {
+            if (renderRef.current) {
+              renderRef.current.options.background = "#000000";
+            }
+          }, 50);
+        }
+
+        // Distort gravity based on reality breaks
         if (realityBreakRef.current > 0) {
           engineRef.current!.gravity.y = 1.8 + (Math.random() - 0.5) * (realityBreakRef.current * 0.2);
           engineRef.current!.gravity.x = (Math.random() - 0.5) * (realityBreakRef.current * 0.1);
         }
 
-        // Add random glitch messages as reality breaks increase
+        // Random impulses to bouncing balls
+        if (Math.random() > 0.98) {
+          bouncingBallsRef.current.forEach(ball => {
+            if (Math.random() > 0.8) {
+              Body.applyForce(ball, ball.position, {
+                x: (Math.random() - 0.5) * 0.0001,
+                y: (Math.random() - 0.5) * 0.0001
+              });
+            }
+          });
+        }
+
+        // Random angular velocity changes for spinners
+        if (Math.random() > 0.98) {
+          whiteSpinnersRef.current.forEach(spinner => {
+            if (Math.random() > 0.8) {
+              Body.setAngularVelocity(spinner.obstacle, 
+                spinner.obstacle.angularVelocity + (Math.random() - 0.5) * 0.1
+              );
+            }
+          });
+        }
+
+        // Add random glitch messages
         if (Math.random() > 0.9 && realityBreakRef.current > 0) {
           addGlitchMessage();
         }
       }
     }, 100);
 
+    // Collision handling
     Events.on(engineRef.current, "collisionStart", (event) => {
       event.pairs.forEach((pair) => {
         if (pair.bodyA === playerRef.current || pair.bodyB === playerRef.current) {
           const otherBody = pair.bodyA === playerRef.current ? pair.bodyB : pair.bodyA;
           
-          // Check for ground collision
           if (otherBody.position.y > playerRef.current!.position.y) {
             isGroundedRef.current = true;
           }
 
-          // Check for reality break zones
+          // Reality break collision
           if (realityBreaks.includes(otherBody)) {
             realityBreakRef.current += 1;
             World.remove(engineRef.current!.world, otherBody);
             setShowGlitchText(true);
             setTimeout(() => setShowGlitchText(false), 1000);
             
-            // Distort player
             if (playerRef.current) {
               playerRef.current.render.strokeStyle = `#${Math.floor(Math.random()*16777215).toString(16)}`;
             }
           }
 
-          // Check for final breach
+          // Hazardous platform collision
+          if (redPlatforms.includes(otherBody)) {
+            toast.error("Reality Destabilized! Resetting...");
+            Body.setPosition(playerRef.current!, { x: 100, y: 500 });
+            realityBreakRef.current = Math.max(0, realityBreakRef.current - 1);
+          }
+
+          // Final breach collision
           if (otherBody === finalBreach) {
             handleLevelComplete();
           }
@@ -202,7 +303,7 @@ const Unknown0: React.FC = () => {
       });
     });
 
-    // Camera follow with increasing shake based on reality breaks
+    // Camera follow with glitch shake
     Events.on(engineRef.current, "afterUpdate", () => {
       if (playerRef.current && renderRef.current) {
         const shakeAmount = realityBreakRef.current * 2;
@@ -222,6 +323,7 @@ const Unknown0: React.FC = () => {
       }
     });
 
+    // Player controls
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!playerRef.current) return;
 
@@ -259,7 +361,9 @@ const Unknown0: React.FC = () => {
     Render.run(renderRef.current);
 
     return () => {
-      clearInterval(glitchIntervalRef.current!);
+      if (glitchIntervalRef.current) {
+        clearInterval(glitchIntervalRef.current);
+      }
       window.removeEventListener("keydown", handleKeyDown);
       if (renderRef.current) {
         Render.stop(renderRef.current);
@@ -289,28 +393,25 @@ const Unknown0: React.FC = () => {
         background: "#000",
       }}
     >
-      {showGlitchText && (
-        <GlitchText 
-          text="REALITY BREAK DETECTED" 
-          style={{
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)"
-          }}
-        />
-      )}
-      {glitchMessages.map((msg, index) => (
-        <GlitchText
-          key={index}
-          text={msg.text}
-          style={{
-            top: `${msg.position.y}px`,
-            left: `${msg.position.x}px`,
-            opacity: 0.7
-          }}
-        />
-      ))}
-      <div ref={sceneRef} />
+            {showGlitchText &&
+        glitchMessages.map((message, index) => (
+          <GlitchText
+            key={index}
+            text={message.text}
+            style={{
+              left: `${message.position.x}px`,
+              top: `${message.position.y}px`,
+            }}
+          />
+        ))}
+      <div
+        ref={sceneRef}
+        style={{
+          width: "100%",
+          height: "100%",
+          position: "relative",
+        }}
+      />
     </div>
   );
 };
