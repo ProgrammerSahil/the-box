@@ -132,14 +132,14 @@ const Unknown0: React.FC = () => {
     };
 
     // Add 50 bouncing balls
-    for (let i = 0; i < 50; i++) {
+    for (let i = 0; i < 30; i++) {
       const ball = createBouncingBall(
         400 + (i % 10) * 200 + Math.random() * 100,
         200 + Math.floor(i / 10) * 100 + Math.random() * 50
       );
       Body.setVelocity(ball, {
-        x: (Math.random() - 0.5) * 5,
-        y: (Math.random() - 0.5) * 5
+        x: (Math.random() - 0.5) * 7,
+        y: (Math.random() - 0.5) * 7
       });
       bouncingBallsRef.current.push(ball);
     }
