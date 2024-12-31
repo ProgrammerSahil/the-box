@@ -13,6 +13,9 @@ export default function LoginPage() {
   });
   const [buttonDisabled, setButtonDisabled] = React.useState(false);
 
+  const onSignupPush = () => {
+    router.push('/signup');
+  }
   const onLogin = async () => {
     try {
       const response = await axios.post("/api/users/login", user);
@@ -36,32 +39,71 @@ export default function LoginPage() {
   }, [user]);
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-2">
-      <h1>Login</h1>
-      <hr />
-      <input
-        className="p-2 m-2 text-black"
-        type="text"
+    /* From Uiverse.io by iZOXVL */ 
+<div className="max-w-lg w-full">
+<div 
+      className="bg-gray-800 rounded-lg shadow-xl overflow-hidden"
+      style={{
+        boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)'
+      }}
+    >
+    <div className="p-8">
+      <h2 className="text-center text-3xl font-extrabold text-white">
+        Welcome Back
+      </h2>
+      <p className="mt-4 text-center text-gray-400">Sign in to continue</p>
+      <form method="POST" action="#" className="mt-8 space-y-6">
+        <div className="rounded-md shadow-sm">
+          <div>
+            <label className="sr-only">Username</label>
+            <input
+              className="appearance-none relative block w-full px-3 py-3 border border-gray-700 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+              type="text"
         id="username"
         value={user.username}
         onChange={(e) => setUser({ ...user, username: e.target.value })}
         placeholder="username"
-      />
-      <input
-        className="p-2 m-2 text-black"
-        type="password"
+            />
+          </div>
+          <div className="mt-4">
+            <label className="sr-only" >Password</label>
+            <input
+              className="appearance-none relative block w-full px-3 py-3 border border-gray-700 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm"
+              type="password"
         id="password"
         value={user.password}
         onChange={(e) => setUser({ ...user, password: e.target.value })}
         placeholder="password"
-      />
+            />
+          </div>
+        </div>
 
-      <button
-        className="text-black p-3 m-2 font-mono bg-slate-300"
-        onClick={onLogin}
-      >
-        Login
-      </button>
+        <div className="flex items-center justify-between mt-4">
+          <div className="flex items-center">
+            
+          </div>
+
+        </div>
+
+        <div>
+          <button
+            className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-medium rounded-md text-gray-900 bg-indigo-500 hover:bg-indigo-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            type="submit"
+            onClick={onLogin}
+          >
+            Login
+          </button>
+        </div>
+      </form>
     </div>
+    <div className="px-8 py-4 bg-gray-700 text-center">
+      <span className="text-gray-400">Don't have an account?</span>
+      <a className="font-medium text-indigo-500 hover:text-indigo-400 cursor-pointer" onClick={onSignupPush}
+        >Sign up</a>
+    </div>
+  </div>
+</div>
+
+    
   );
 }

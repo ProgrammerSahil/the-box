@@ -7,6 +7,11 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import toast from "react-hot-toast";
 
+const handleLogout = () => {
+  localStorage.clear("username");
+  window.location.href = "/";
+};
+
 export default function Home() {
   const sceneRef = useRef<HTMLDivElement>(null);
   const engineRef = useRef<Matter.Engine | null>(null);
@@ -15,6 +20,7 @@ export default function Home() {
   const [userLevel, setUserLevel] = useState(1);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
+
 
   useEffect(() => {
     // Check authentication and fetch user level
@@ -62,12 +68,12 @@ export default function Home() {
     });
 
     // Button dimensions for spawn area calculation
-    const buttonWidth = 200;
+    const buttonWidth = 150;
     const buttonHeight = 60;
     const buttonSpacing = 20;
     const totalWidth = buttonWidth * 2 + buttonSpacing;
     const startX = (window.innerWidth - totalWidth) / 2;
-    const buttonY = window.innerHeight / 2 - 10;
+    const buttonY = window.innerHeight / 2 - 60;
 
     // Create falling boxes with concentrated spawn area
     const boxes: Matter.Body[] = [];
@@ -265,7 +271,7 @@ export default function Home() {
                 href="/login"
                 className="px-8 py-3 text-lg font-semibold text-black bg-white rounded-lg hover:bg-gray-200 transition-colors"
               >
-                Login
+                Login/Signup
               </Link>
             )}
 
@@ -277,9 +283,13 @@ export default function Home() {
             </Link>
           </div>
         )}
-        <h2 className="mt-20 text-white text-2xl font-bold tracking-wider">
+        <h2 className="mt-20 mb-20 text-white text-2xl font-bold tracking-wider">
           In an AI Research Lab at Los Alamos
         </h2>
+        <div>
+        {isAuthenticated? (
+          <a className=" text-white text-l cursor-pointer" onClick={handleLogout}>Logout</a>
+        ):(<a className=" display-none text-l cursor-pointer" onClick={handleLogout}>Logout</a>)}</div>
       </div>
     </div>
   );
