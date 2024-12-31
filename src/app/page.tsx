@@ -17,13 +17,27 @@ export default function Home() {
   const engineRef = useRef<Matter.Engine | null>(null);
   const renderRef = useRef<Matter.Render | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isPhone, setIsPhone] = useState(false);
   const [userLevel, setUserLevel] = useState(1);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
 
-
   useEffect(() => {
-    // Check authentication and fetch user level
+    // Check for phone width
+    const checkPhoneWidth = () => {
+      setIsPhone(window.innerWidth <= 768);
+    };
+
+    checkPhoneWidth();
+    window.addEventListener("resize", checkPhoneWidth);
+
+    return () => {
+      window.removeEventListener("resize", checkPhoneWidth);
+    };
+  }, []);
+
+  useEffect(() => { 
+    if(isPhone) return;
     const checkAuthAndLevel = async () => {
       const username = localStorage.getItem("username");
       if (username) {
@@ -226,7 +240,17 @@ export default function Home() {
       }
       Runner.stop(runner);
     };
-  }, []);
+  }, [isPhone]);
+
+  if(isPhone){
+    return(
+      <>
+        <div className="bg-black min-h-screen flex-col items-center justify-center">
+          <h2 className="text-white text-center pt-60">Game currently only designed to work on pc :(</h2>
+        </div>
+      </>
+    )
+  }
 
   return (
     <div className="relative min-h-screen">
