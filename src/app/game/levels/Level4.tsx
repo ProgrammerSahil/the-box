@@ -13,7 +13,7 @@ const DialogueOverlay: React.FC<{ onDismiss: () => void }> = ({
   const [currentLineIndex, setCurrentLineIndex] = useState(0);
 
   const dialogueLines = [
-    "What??",
+    "What?? <Press enter key>",
     "This can't keep on going...",
     "Am I gonna have to get through this too??",
   ];
