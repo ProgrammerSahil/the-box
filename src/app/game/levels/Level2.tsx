@@ -154,7 +154,7 @@ const Level2: React.FC = () => {
     const { ground, leftWall, rightWall } = spawnWorldBox(Bodies);
 
     // Static and dynamic obstacles
-    const obstacle1 = createObstacle(Bodies, 600, 520, 50, 200, "#ffffff");
+    const obstacle1 = createObstacle(Bodies, 600, 550, 50, 200, "#ffffff");
     const obstacle2 = createObstacle(Bodies, 900, 400, 100, 50, "#ffffff");
     const obstacle3 = createObstacle(Bodies, 1500, 450, 100, 30, "#ffffff");
 

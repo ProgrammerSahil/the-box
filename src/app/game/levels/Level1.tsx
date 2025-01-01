@@ -75,7 +75,7 @@ const Level1: React.FC = () => {
     const { ground, leftWall, rightWall } = spawnWorldBox(Bodies); 
 
     // **More Challenging Obstacles**
-    const obstacle1 = createObstacle(Bodies, 800, 520, 50, 200, "#ffffff"); // Black obstacle
+    const obstacle1 = createObstacle(Bodies, 800, 550, 50, 200, "#ffffff"); // Black obstacle
     const obstacle2 = createObstacle(Bodies, 1100, 480, 200, 50, "#ffffff"); // Black obstacle
     const obstacle3 = createObstacle(Bodies, 1400, 530, 100, 100, "#ffffff"); // Black obstacle
     const obstacle4 = createObstacle(Bodies, 1700, 500, 50, 50, "#ffffff"); // Black obstacle
