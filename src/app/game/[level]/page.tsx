@@ -46,7 +46,7 @@ const MatterGamePage: React.FC = () => {
           fontVariationSettings: "'BLED' 0, 'SCAN' 0, 'XELA' 0, 'YELA' 0",
         }}
       >
-        Level {level}
+        {level===404? "Level: 404 Not Found": `Level ${level}`}
       </h1>
       <div className="flex justify-center items-center w-full max-w-[1200px]">
         {renderLevel()}

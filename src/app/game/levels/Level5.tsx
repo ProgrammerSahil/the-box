@@ -82,7 +82,7 @@ const Level5: React.FC = () => {
 
       const response = await axios.post("/api/users/updateLevel", {
         username: username,
-        newLevel: 6,
+        newLevel: 404,
         secretPath: secretExit,
       });
 

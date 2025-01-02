@@ -37,6 +37,7 @@ const FinalLevel: React.FC = () => {
   const isGroundedRef = useRef(false);
   const glitchIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const realityBreakRef = useRef<number>(0);
+  const finalGoalRef = useRef<Matter.Body | null>(null);
   const router = useRouter();
   const [showGlitchText, setShowGlitchText] = useState(false);
   const [glitchMessages, setGlitchMessages] = useState<Array<{ text: string; position: { x: number; y: number } }>>([]);
@@ -52,7 +53,7 @@ const FinalLevel: React.FC = () => {
 
       const response = await axios.post("/api/users/updateLevel", {
         username: username,
-        newLevel: 999, // Indicate game completion
+        newLevel: 999,
       });
 
       if (response.data) {
@@ -98,7 +99,6 @@ const FinalLevel: React.FC = () => {
     });
     runnerRef.current = Runner.create();
 
-    // Create player with combined style from both levels
     playerRef.current = Bodies.rectangle(100, 500, 20, 20, {
       render: {
         fillStyle: "#ffffff",
@@ -112,16 +112,14 @@ const FinalLevel: React.FC = () => {
 
     const { ground, leftWall, rightWall } = spawnWorldBox(Bodies);
 
-    // Create hazardous platforms (red and white combination)
     const platforms = [
       Bodies.rectangle(400, 490, 200, 10, { isStatic: true, render: { fillStyle: "#880000" } }),
       Bodies.rectangle(800, 430, 150, 10, { isStatic: true, render: { fillStyle: "#ffffff" }, angle: Math.PI / 4 }),
-      Bodies.rectangle(1200, 330, 100, 10, { isStatic: true, render: { fillStyle: "#880000" }, angle: -Math.PI / 3 }),
+      Bodies.rectangle(1200, 300, 100, 10, { isStatic: true, render: { fillStyle: "#880000" }, angle: -Math.PI / 3 }),
       Bodies.rectangle(1600, 550, 200, 10, { isStatic: true, render: { fillStyle: "#ffffff" } }),
-      Bodies.rectangle(2000, 470, 150, 10, { isStatic: true, render: { fillStyle: "#880000" }, angle: Math.PI / 2 }),
+      Bodies.rectangle(2000, 420, 150, 10, { isStatic: true, render: { fillStyle: "#880000" }, angle: Math.PI / 2 }),
     ];
 
-    // Create bouncing balls with combined effects
     const createBouncingBall = (x: number, y: number) => {
       const size = 10 + Math.random() * 15;
       return Bodies.circle(x, y, size, {
@@ -138,7 +136,6 @@ const FinalLevel: React.FC = () => {
       });
     };
 
-    // Add more bouncing balls
     for (let i = 0; i < 40; i++) {
       const ball = createBouncingBall(
         400 + (i % 10) * 200 + Math.random() * 100,
@@ -151,7 +148,6 @@ const FinalLevel: React.FC = () => {
       bouncingBallsRef.current.push(ball);
     }
 
-    // Create spinning obstacles
     const createSpinner = (x: number, y: number) => {
       const width = 120 + Math.random() * 100;
       const height = 15;
@@ -179,17 +175,22 @@ const FinalLevel: React.FC = () => {
       return { obstacle, constraint };
     };
 
-    // Add more spinners
     for (let i = 0; i < 20; i++) {
+      let y;
+      if (i > 15) {
+        y = 500 + Math.sin(i) * 30; // Ground-level spinners
+      } else {
+        y = 250 + Math.sin(i) * 120; // Higher spinners
+      }
+      
       const spinner = createSpinner(
         600 + i * 250,
-        250 + Math.sin(i) * 120
+        y
       );
       whiteSpinnersRef.current.push(spinner);
     }
 
-    // Create final goal area with combined styles
-    const finalGoal = Bodies.rectangle(5000, 300, 100, 150, {
+    finalGoalRef.current = Bodies.rectangle(5000, 400, 100, 150, {
       isStatic: true,
       isSensor: true,
       render: {
@@ -200,7 +201,6 @@ const FinalLevel: React.FC = () => {
       }
     });
 
-    // Add everything to the world
     World.add(engineRef.current.world, [
       playerRef.current,
       ground,
@@ -210,13 +210,12 @@ const FinalLevel: React.FC = () => {
       ...bouncingBallsRef.current,
       ...whiteSpinnersRef.current.map(s => s.obstacle),
       ...whiteSpinnersRef.current.map(s => s.constraint),
-      finalGoal
+      finalGoalRef.current
     ]);
 
     // Reality distortion and glitch effects
     glitchIntervalRef.current = setInterval(() => {
       if (playerRef.current && renderRef.current) {
-        // Enhanced background glitches
         if (Math.random() > 0.93) {
           renderRef.current.options.background = ['#ff0000', '#000000', '#ffffff'][Math.floor(Math.random() * 3)];
           setTimeout(() => {
@@ -226,11 +225,9 @@ const FinalLevel: React.FC = () => {
           }, 50);
         }
 
-        // Dynamic gravity distortions
         engineRef.current!.gravity.y = 1.8 + (Math.random() - 0.5) * 0.5;
         engineRef.current!.gravity.x = (Math.random() - 0.5) * 0.2;
 
-        // Enhanced ball dynamics
         if (Math.random() > 0.95) {
           bouncingBallsRef.current.forEach(ball => {
             if (Math.random() > 0.7) {
@@ -242,7 +239,6 @@ const FinalLevel: React.FC = () => {
           });
         }
 
-        // Dynamic spinner behavior
         if (Math.random() > 0.95) {
           whiteSpinnersRef.current.forEach(spinner => {
             if (Math.random() > 0.7) {
@@ -253,14 +249,27 @@ const FinalLevel: React.FC = () => {
           });
         }
 
-        // Add glitch messages more frequently
+        // Exit glitching behavior
+        if (finalGoalRef.current) {
+          const baseY = 400;
+          const baseX = 5000;
+          Body.setPosition(finalGoalRef.current, {
+            x: baseX + Math.sin(Date.now() / 500) * 30,
+            y: baseY + Math.cos(Date.now() / 300) * 40
+          });
+
+          if (Math.random() > 0.95) {
+            Body.setAngle(finalGoalRef.current, (Math.random() - 0.5) * 0.5);
+            finalGoalRef.current.render.opacity = 0.5 + Math.random() * 0.5;
+          }
+        }
+
         if (Math.random() > 0.85) {
           addGlitchMessage();
         }
       }
     }, 100);
 
-    // Collision handling
     Events.on(engineRef.current, "collisionStart", (event) => {
       event.pairs.forEach((pair) => {
         if (pair.bodyA === playerRef.current || pair.bodyB === playerRef.current) {
@@ -270,21 +279,18 @@ const FinalLevel: React.FC = () => {
             isGroundedRef.current = true;
           }
 
-          // Handle hazardous platform collisions
           if (platforms.includes(otherBody) && otherBody.render.fillStyle === "#880000") {
             toast.error("Reality Destabilized!");
             Body.setPosition(playerRef.current!, { x: 100, y: 500 });
           }
 
-          // Final goal collision
-          if (otherBody === finalGoal) {
+          if (otherBody === finalGoalRef.current) {
             handleLevelComplete();
           }
         }
       });
     });
 
-    // Camera follow with enhanced shake
     Events.on(engineRef.current, "afterUpdate", () => {
       if (playerRef.current && renderRef.current) {
         const shakeX = (Math.random() - 0.5) * 4;
@@ -303,7 +309,6 @@ const FinalLevel: React.FC = () => {
       }
     });
 
-    // Enhanced player controls
     const handleKeyDown = (e: KeyboardEvent) => {
       if (!playerRef.current) return;
 
