@@ -17,7 +17,7 @@ export default function LoginPage() {
     router.push('/signup');
   }
 
-  const onLogin = async (e:Event) => {
+  const onLogin = async (e:any) => {
     e.preventDefault();
     try {
       const response = await axios.post("/api/users/login", user);
