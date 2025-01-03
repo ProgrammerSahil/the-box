@@ -13,7 +13,11 @@ const DialogueOverlay: React.FC<{ onDismiss: () => void }> = ({ onDismiss }) => 
   const dialogueLines = [
     "No this cant be real.. <Press enter key>",
     "This looks too difficult",
-    "Is there another way out of these walls?"
+    "Is there another way out of these walls?",
+    "what is this above me??",
+    "their world is glitching i thinkk.",
+    "this is my way out.",
+    "I just need to find a way to get to this thing"
   ];
 
   useEffect(() => {
@@ -148,8 +152,10 @@ const Level5: React.FC = () => {
       isSensor: true,
       render: {
         fillStyle: "#ffffff",
-        opacity: 0.1,
-        visible: true
+        opacity: 0.2,
+        visible: true,
+        strokeStyle: "#ffffff",
+        lineWidth: 1
       }
     });
 
@@ -159,17 +165,18 @@ const Level5: React.FC = () => {
       if (!secretExitRef.current) return;
       
       isGlitching = !isGlitching;
-      const opacity = isGlitching ? Math.random() * 0.15 : 0.05;
-      const offsetX = isGlitching ? (Math.random() * 4) - 2 : 0;
+      const opacity = isGlitching ? 0.3 + (Math.random() * 0.2) : 0.15;
+      const offsetX = isGlitching ? (Math.random() * 6) - 3 : 0;
+      const offsetY = isGlitching ? (Math.random() * 4) - 2 : 0;
       
       if (secretExitRef.current && secretExitRef.current.render) {
         secretExitRef.current.render.opacity = opacity;
         Body.setPosition(secretExitRef.current, {
           x: 85 + offsetX,
-          y: secretExitRef.current.position.y
+          y: 430 + offsetY
         });
       }
-    }, 100);
+    }, 150);
 
     const redPlatforms = [
       Bodies.rectangle(400, 490, 190, 10, { isStatic: true, render: { fillStyle: "darkred" } }),
