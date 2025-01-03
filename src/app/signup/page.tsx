@@ -14,7 +14,7 @@ export default function SignupPage() {
 
   const [buttonDisabled, setButtonDisabled] = React.useState(false);
 
-  const onSignup = async (e: Event) => {
+  const onSignup = async (e: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
     e.preventDefault();
     try {
       await axios.post("/api/users/signup", user);
