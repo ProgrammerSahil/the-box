@@ -58,7 +58,7 @@ const FinalLevel: React.FC = () => {
 
       if (response.data) {
         toast.success("REALITY RESTORED - GAME COMPLETE!");
-        router.push("/victory");
+        router.push("/end");
       }
     } catch (error: any) {
       console.error("Error updating level:", error);
