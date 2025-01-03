@@ -7,7 +7,7 @@ import axios from "axios";
 import toast from "react-hot-toast";
 
 const handleLogout = () => {
-  localStorage.clear("username");
+  localStorage.clear();
   window.location.href = "/";
 };
 
