@@ -3,7 +3,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import Matter from "matter-js";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import axios from "axios";
 import toast from "react-hot-toast";
 
@@ -20,7 +19,6 @@ export default function Home() {
   const [isPhone, setIsPhone] = useState(false);
   const [userLevel, setUserLevel] = useState(1);
   const [loading, setLoading] = useState(true);
-  const router = useRouter();
 
   useEffect(() => {
     // Check for phone width
